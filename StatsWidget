@@ -1,0 +1,1178 @@
+[Rainmeter]
+Update=1000
+AccurateText=1
+OnRefreshAction=[!CommandMeasure MeasureScript "Initialize()"][!UpdateMeter *][!Redraw]
+
+[MeasureScript]
+Measure=Script
+ScriptFile=#@#DateScript.lua
+
+[MeasureTimer]
+Measure=Time
+UpdateDivider=1
+IfCondition=1
+IfTrueAction=[!CommandMeasure MeasureScript "Initialize()"]
+
+[Metadata]
+Name=Stats Widget
+Author=Azlan Aziz (https://rayaz.xyz/)
+Information=Simple Stat Showing Skin With Time, Date & Weather
+Version=1.1.3 (20|04|2026)
+License=Creative Commons Attribution - Non - Commercial - Share Alike 3.0
+
+[Variables]
+Scale = 1
+@Include=#@#Variables.inc
+DaysText = [MeasureDaysLayout]
+OldDown=0
+OldUp=0
+NetDownMbps=0
+NetUpMbps=0
+
+Width=320
+Padding=24
+
+TopBarIconSize=18
+WeatherCurrentIconSize=(24*4)
+WeatherDetailsIconSize=18
+WeatherDailyIconSize=36
+WeatherDailyAmountOfDays=4
+
+WeatherDetailsContainerScrollPlusOrMinus=-
+
+UnfoldState=1
+
+UnfoldIcon0=expand_more
+UnfoldIcon1=expand_less
+
+True=1
+False=0
+
+WeatherIconStyleMono=0
+WeatherIconStyleColor=1
+
+Border0=None
+Border1=All
+
+BackgroundMode=2
+SolidColor=0, 0, 0, 1
+
+ContextTitle=Settings...
+ContextAction=["#ConfigEditor#" "#@#Variables.inc"]
+
+[IncludeWeatherParser]
+@Include=#@#WeatherParserCache.inc
+@Include2=#@#WeatherParser.inc
+@Include3=#@#WeatherParserDaily.inc
+
+[BackgroundBox]
+Meter=Shape
+Shape=Rectangle 10,10,785,465 | StrokeWidth 10 | StrokeColor 255,255,255,255 | Fill Color 0,0,0,255
+
+; Vertical Line 1 - Left side (e.g., at x=200)
+[VerticalLine1]
+Meter=Shape
+Shape=Line 266,10,266,480 | StrokeWidth 5 | StrokeColor 255,255,255,255
+
+; Vertical Line 2 - Right side (e.g., at x=600)
+[VerticalLine2]
+Meter=Shape
+Shape=Line 532,10,532,480 | StrokeWidth 5 | StrokeColor 255,255,255,255
+
+;--------------------ServerStats--------------------;
+
+[MeasureStats]
+Measure=Plugin
+Plugin=WebParser
+URL=http://192.168.0.123/stats.php
+UpdateRate=1
+RegExp="(?i)\"cpu\":([\d.]+).*\"temp\":([\d.]+).*\"ram_u\":([\d.]+).*\"ram_t\":([\d.]+).*\"ram_p\":([\d.]+).*\"ssd_u\":([\d.]+).*\"ssd_t\":([\d.]+).*\"ssd_p\":([\d.]+).*\"raid_u\":([\d.]+).*\"raid_t\":([\d.]+).*\"raid_p\":([\d.]+).*\"net_rx\":\"(\d+)\".*\"net_tx\":\"(\d+)\""
+
+[MeasureCPU]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=1
+
+[MeasureCPUTemp]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=2
+
+[MeasureRAM]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=3
+
+[MeasureRaidTotal]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=10
+
+[MeasureRaidUsed]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=9
+
+; -------- RAW TOTAL BYTES --------
+
+[MeasureNetDownRaw]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=12
+OnUpdateAction=[!UpdateMeasure MeasureNetDownMbps][!SetVariable NetDownOld [MeasureNetDownRaw]]
+
+[MeasureNetUpRaw]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=13
+OnUpdateAction=[!UpdateMeasure MeasureNetUpMbps][!SetVariable NetUpOld [MeasureNetUpRaw]]
+
+
+; -------- STORE PREVIOUS TOTALS --------
+
+[MeasureNetDownOld]
+Measure=Calc
+Formula=MeasureNetDownRaw
+UpdateDivider=-1
+
+[MeasureNetUpOld]
+Measure=Calc
+Formula=MeasureNetUpRaw
+UpdateDivider=-1
+
+
+; -------- SPEED (Mbps) --------
+
+[MeasureNetDownMbps]
+Measure=Calc
+Formula=((MeasureNetDownRaw - MeasureNetDownOld) * 8) / (1000000 * #UPDATEINTERVAL#/1000)
+DynamicVariables=1
+
+[MeasureNetUpMbps]
+Measure=Calc
+Formula=((MeasureNetUpRaw - MeasureNetUpOld) * 8) / (1000000 * #UPDATEINTERVAL#/1000)
+DynamicVariables=1
+
+[Variables]
+NetDownOld=0
+NetUpOld=0
+
+
+
+
+[Heading1]
+Meter=Shape
+Shape=Line 10,40,265,40 | StrokeWidth 50 | StrokeColor 255,255,255,255
+
+[Title1]
+Meter=String
+StringAlign=CenterCenter
+Text=Server Stats
+FontColor=0,0,0,255
+FontSize=20
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=35
+X=136
+
+[LeftTexts]
+StringAlign=Left
+FontColor=255,255,255,255
+FontSize=12
+AntiAlias=1
+FontFace=Alata
+X=25
+
+[RightTexts]
+StringAlign=Right
+FontColor=255,255,255,255
+FontSize=12
+AntiAlias=1
+FontFace=Alata
+X=250
+
+[IPText]
+Meter=String
+Text=Local IP Address:
+MeterStyle=LeftTexts
+Y=75
+
+[LocalIP]
+Meter=String
+Text=192.168.0.123
+MeterStyle=RightTexts
+Y=75
+
+[MeterCPUText]
+Meter=String
+Text=CPU Utilization:
+MeterStyle=LeftTexts
+Y=105
+
+[MeterCPU]
+Meter=String
+MeasureName=MeasureCPU
+Text=%1%
+MeterStyle=RightTexts
+Y=105
+
+[MeterTempText]
+Meter=String
+Text=CPU Temparature:
+MeterStyle=LeftTexts
+Y=135
+
+[MeterTemp]
+Meter=String
+MeasureName=MeasureCPUTemp
+Text=%1°C
+MeterStyle=RightTexts
+Y=135
+
+[MeterRAMText]
+Meter=String
+Text=RAM Usage:
+MeterStyle=LeftTexts
+Y=165
+
+[MeterRAM]
+Meter=String
+MeasureName=MeasureRAM
+Text=%1 GB / 16GB
+MeterStyle=RightTexts
+Y=165
+
+[MeterRaidText]
+Meter=String
+Text=Storage:
+MeterStyle=LeftTexts
+Y=195
+
+[MeterRaid]
+Meter=String
+MeasureName=MeasureRaidUsed
+MeasureName2=MeasureRaidTotal
+Text=%1 GB / %2 GB
+MeterStyle=RightTexts
+Y=195
+
+[MeterDownText]
+Meter=String
+Text=Download Speed:
+MeterStyle=LeftTexts
+Y=225
+
+[MeterDown]
+Meter=String
+MeasureName=MeasureNetDownMbps
+Text=%1 Mbps
+MeterStyle=RightTexts
+Y=225
+
+[MeterUpText]
+Meter=String
+Text=Upload Speed:
+MeterStyle=LeftTexts
+Y=255
+
+[MeterUp]
+Meter=String
+MeasureName=MeasureNetUpMbps
+Text=%1 Mbps
+MeterStyle=RightTexts
+Y=255
+
+;--------------------Minecraft--------------------;
+
+[Heading2]
+Meter=Shape
+Shape=Line 10,325,265,325 | StrokeWidth 60 | StrokeColor 255,255,255,255
+
+[Title2]
+Meter=String
+StringAlign=CenterCenter
+Text=Minecraft Server
+FontColor=0,0,0,255
+FontSize=20
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=325
+X=136
+
+[MeasureMCOnline]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=6
+UpdateDivider=1
+
+[MeasureMCStatusText]
+Measure=String
+DynamicVariables=1
+IfCondition=(MeasureMCOnline=1)
+IfTrueAction=[!SetOption MeterStatusValue Text "Online"][!SetOption MeterStatusValue FontColor "0,255,0,255"][!UpdateMeter MeterStatusValue][!Redraw]
+IfFalseAction=[!SetOption MeterStatusValue Text "Offline"][!SetOption MeterStatusValue FontColor "255,0,0,255"][!UpdateMeter MeterStatusValue][!Redraw]
+
+[MeasureMCPlayers]
+Measure=Plugin
+Plugin=WebParser
+URL=[MeasureStats]
+StringIndex=14
+
+[MCIPText]
+Meter=String
+Text=IP Address:
+MeterStyle=LeftTexts
+Y=365
+
+[MCIP]
+Meter=String
+Text=play.rayaz.xyz
+MeterStyle=RightTexts
+Y=365
+
+[MeterStatusLabel]
+Meter=String
+Text=Status:
+MeterStyle=LeftTexts
+Y=395
+
+[MeterStatusValue]
+Meter=String
+Text=Online
+MeterStyle=RightTexts
+Y=395
+
+[MeterMCPlayersText]
+Meter=String
+Text=Players:
+MeterStyle=LeftTexts
+Y=425
+
+[MeterMCPlayers]
+Meter=String
+MeasureName=MeasureMCPlayers
+Text=%1
+MeterStyle=RightTexts
+Y=425
+
+;--------------------Time--------------------;
+
+[MeasureSecond]
+Measure = Time
+Format = %S
+
+[MeasureTime]
+Measure = Time
+Format = %#I:%M
+
+[MeterTime]
+Meter = String
+MeasureName = MeasureTime
+X = (375*#Scale#)
+Y = (70*#Scale#)
+FontColor = 255,255,255,255
+FontSize = 60
+FontFace = Alata
+FontWeight = 600
+AntiAlias = 1
+StringAlign = CenterCenter
+
+[Circle]
+Meter = Shape
+Shape = Rectangle (0*#Scale#), (0*#Scale#), (55*#Scale#), (55*#Scale#), (10*#Scale#) | Fill Color ffffff | StrokeWidth 0
+X = 478
+Y = 71
+DynamicVariables = 1
+
+[MeterSecond]
+Meter=String
+MeasureName=MeasureSecond
+X = (505*#Scale#)
+Y = (99*#Scale#)
+FontColor = 000000
+FontSize = 24
+FontFace = Alata
+FontWeight = 600
+AntiAlias = 1
+StringAlign = CenterCenter
+
+[Devider1]
+Meter=Shape
+Shape=Line 265,125,530,125 | StrokeWidth 5 | StrokeColor 255,255,255,255
+
+;--------------------Weather--------------------;
+
+[TopBarIcon]
+Meter=String
+Text=place
+FontFace=Material Icons Outlined
+FontSize=10
+FontColor=#WeatherCurrentFontColor#
+AntiAlias=1
+X=275
+Y=142
+UpdateDivider=-1
+DynamicVariables=1
+
+[TopBarTitle]
+Meter=String
+Text=[mWeatherLocationCity]
+FontFace=Alata
+FontSize=8
+FontColor=#WeatherCurrentFontColor#
+AntiAlias=1
+X=295
+Y=141
+UpdateDivider=-1
+DynamicVariables=1
+
+[WeatherCurrentIconColor]
+Meter=Image
+ImageName=#@#WeatherIcons\[mWeatherCurrentIcon].png
+W=45
+H=45
+X=320
+Y=165
+UpdateDivider=-1
+DynamicVariables=1
+UpdateRate=1
+Update=1000
+Hidden=([#WeatherIconStyle[#WeatherCurrentIconStyle]]=0 ? 1 : 0)
+
+[WeatherCurrentIconMono]
+Meter=String
+Text=[mWeatherCurrentIcon]
+FontFace=JDWI
+FontSize=(#Scale#*#WeatherCurrentIconSize#*0.75)
+FontColor=#WeatherCurrentFontColor#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+X=r
+Y=r
+UpdateDivider=-1
+DynamicVariables=1
+Hidden=([#WeatherIconStyle[#WeatherCurrentIconStyle]]=1 ? 1 : 0)
+
+[WeatherCurrentPhrase]
+Meter=String
+Text=[mWeatherCurrentPhrase]
+FontFace=#Font#
+FontSize=10
+FontColor=#WeatherCurrentFontColor#, (255*0.5)
+AntiAlias=1
+UpdateRate=1
+Update=1000
+StringAlign=Left
+ClipString=1
+W=(#Scale#*(#Width#-#Padding#*3-#WeatherCurrentIconSize#))
+X=285
+Y=215
+UpdateDivider=-1
+DynamicVariables=1
+Container=WeatherCurrentContainer
+
+[WeatherCurrentTemperature]
+Meter=String
+Text=[mWeatherCurrentTemperature]°
+FontFace=#Font#
+FontSize=44
+FontColor=#WeatherCurrentFontColor#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+StringAlign=Left
+ClipString=1
+W=(#Scale#*(#Width#-#Padding#*3-#WeatherCurrentIconSize#))
+X=410
+Y=140
+UpdateDivider=-1
+DynamicVariables=1
+
+[WeatherDetailsContainer]
+Meter=Image
+W=260
+H=(#Scale#*#WeatherDetailsIconSize#)
+SolidColor=FFFFFF
+UpdateRate=1
+Update=1000
+X=260
+Y=240
+DynamicVariables=1
+UpdateDivider=-1
+MouseOverAction=[!CommandMeasure mContainerScrollActionTimer "Stop 1"] [!SetVariable WeatherDetailsContainerScrollPlusOrMinus "+"] [!CommandMeasure mContainerScrollActionTimer "Execute 1"]
+MouseLeaveAction=[!CommandMeasure mContainerScrollActionTimer "Stop 1"] [!SetVariable WeatherDetailsContainerScrollPlusOrMinus "-"] [!CommandMeasure mContainerScrollActionTimer "Execute 1"]
+
+[mContainerScrollActionTimer]
+Measure=Plugin
+Plugin=ActionTimer
+ActionList1=Repeat Scroll, 10, 10
+Scroll=[!UpdateMeasure mWeatherDetailsContainerScroll] [!UpdateMeterGroup WeatherDetails] [!Redraw]
+
+[mWeatherDetailsContainerScroll]
+Measure=Calc
+Formula=Clamp(mWeatherDetailsContainerScroll#WeatherDetailsContainerScrollPlusOrMinus##Scale#*(#WeatherDetailsIconSize#*1.5)/((1000/10)*0.1), 0, #Scale#*#WeatherDetailsIconSize#*1.5)
+DynamicVariables=1
+UpdateDivider=-1
+
+
+; -------------------------------------------------------------
+; ROW 1: SUNRISE & SUNSET (Visible by default)
+; -------------------------------------------------------------
+
+[WeatherDaily1SunriseIcon]
+Group=WeatherDetails
+Meter=String
+Text=sunrise
+FontFace=JDWI-MISC
+FontSize=(#Scale#*#WeatherDetailsIconSize#*0.75)
+FontColor=#Color#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+; Adjusted X formula to center the 2 sunrise/sunset items perfectly
+X=((#Scale#*(#Width#-#Padding#*2-3.5*#WeatherDetailsIconSize#)-[WeatherDaily1Sunrise:W]-[WeatherDaily1Sunset:W])/2)
+Y=(Neg([mWeatherDetailsContainerScroll]))
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherDaily1Sunrise]
+Group=WeatherDetails
+Meter=String
+Text=[mWeatherDaily1Sunrise]
+FontFace=#Font#
+FontSize=(#Scale#*14*0.75)
+FontColor=#Color#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+X=(#Scale#*#WeatherDetailsIconSize#*0.5)R
+Y=((#Scale#*#WeatherDetailsIconSize#-[WeatherDaily1Sunrise:H])/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherDaily1SunsetIcon]
+Group=WeatherDetails
+Meter=String
+Text=sunset
+FontFace=JDWI-MISC
+FontSize=(#Scale#*#WeatherDetailsIconSize#*0.75)
+FontColor=#Color#
+AntiAlias=1
+X=(#Scale#*#WeatherDetailsIconSize#)R
+Y=(([WeatherDaily1Sunrise:H]-#Scale#*#WeatherDetailsIconSize#)/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherDaily1Sunset]
+Group=WeatherDetails
+Meter=String
+Text=[mWeatherDaily1Sunset]
+FontFace=#Font#
+FontSize=(#Scale#*14*0.75)
+FontColor=#Color#
+AntiAlias=1
+X=(#Scale#*#WeatherDetailsIconSize#*0.5)R
+Y=((#Scale#*#WeatherDetailsIconSize#-[WeatherDaily1Sunset:H])/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+
+; -------------------------------------------------------------
+; ROW 2: HUMIDITY, PRECIPITATION, & WIND (Visible on hover)
+; -------------------------------------------------------------
+
+[WeatherCurrentHumidityIcon]
+Group=WeatherDetails
+Meter=String
+Text=humidity
+FontFace=JDWI-MISC
+FontSize=(#Scale#*#WeatherDetailsIconSize#*0.75)
+FontColor=#Color#
+AntiAlias=1
+; Original centering formula for the 3 items
+X=((#Scale#*(#Width#-#Padding#*2-6.5*#WeatherDetailsIconSize#)-[WeatherCurrentHumidity:W]-[WeatherDaily1Precip:W]-[WeatherCurrentWindSpeed:W])/2)
+; Pushes this row below the Sunrise/Sunset row
+Y=(Max((#Scale#*#WeatherDetailsIconSize#-[WeatherDaily1Sunset:H])/2, 0)+Max(([WeatherCurrentHumidity:H]-#Scale#*#WeatherDetailsIconSize#)/2, 0)+#Scale#*#WeatherDetailsIconSize#*0.5)R
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherCurrentHumidity]
+Group=WeatherDetails
+Meter=String
+Text=[mWeatherCurrentHumidity:0]%
+FontFace=#Font#
+FontSize=(#Scale#*14*0.75)
+FontColor=#Color#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+X=(#Scale#*#WeatherDetailsIconSize#*0.5)R
+Y=((#Scale#*#WeatherDetailsIconSize#-[WeatherCurrentHumidity:H])/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherDaily1PrecipIcon]
+Group=WeatherDetails
+Meter=String
+Text=precipitation
+FontFace=JDWI-MISC
+FontSize=(#Scale#*#WeatherDetailsIconSize#*0.75)
+FontColor=#Color#
+AntiAlias=1
+X=(#Scale#*#WeatherDetailsIconSize#)R
+Y=(([WeatherCurrentHumidity:H]-#Scale#*#WeatherDetailsIconSize#)/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherDaily1Precip]
+Group=WeatherDetails
+Meter=String
+Text=[&mWeatherDaily1[&mWeatherDaily1DayOrNight]Precip:0]%
+FontFace=#Font#
+FontSize=(#Scale#*14*0.75)
+FontColor=#Color#
+AntiAlias=1
+X=(#Scale#*#WeatherDetailsIconSize#*0.5)R
+Y=((#Scale#*#WeatherDetailsIconSize#-[WeatherDaily1Precip:H])/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherCurrentWindDirectionIcon]
+Group=WeatherDetails
+Meter=String
+Text=[mWeatherCurrentWindDirectionIcon]
+FontFace=JDWI-WIND
+FontSize=(#Scale#*#WeatherDetailsIconSize#*0.75)
+FontColor=#Color#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+X=(#Scale#*#WeatherDetailsIconSize#)R
+Y=(([WeatherDaily1Precip:H]-#Scale#*#WeatherDetailsIconSize#)/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[WeatherCurrentWindSpeed]
+Group=WeatherDetails
+Meter=String
+Text=[mWeatherCurrentWindSpeed:0] [mWeatherUnitsSpeed]
+FontFace=#Font#
+FontSize=(#Scale#*14*0.75)
+FontColor=#Color#
+AntiAlias=1
+UpdateRate=1
+Update=1000
+X=(#Scale#*#WeatherDetailsIconSize#*0.5)R
+Y=((#Scale#*#WeatherDetailsIconSize#-[WeatherCurrentWindSpeed:H])/2)r
+DynamicVariables=1
+UpdateDivider=-1
+Container=WeatherDetailsContainer
+
+[Devider2]
+Meter=Shape
+Shape=Line 265,275,530,275 | StrokeWidth 5 | StrokeColor 255,255,255,255
+
+;--------------------Calendar--------------------;
+
+[MeasureDaysLayout]
+Measure=Script
+ScriptFile="#@#DateScript.lua"
+DynamicVariables=1
+OnRefreshAction=[!CommandMeasure MeasureDaysLayout "Initialize()"]
+
+[MeasureScript]
+Measure=Script
+ScriptFile=DateScript.lua
+UpdateDivider=1
+; Ensure the script is actually running and updating the #DaysText#
+
+[MeasureMonthName]
+Measure=Time
+Format=%B
+
+[MeasureYear]
+Measure=Time
+Format=%G
+
+; --- Header ---
+
+[MeterMonth&Year]
+Meter=String
+MeasureName=MeasureMonthName
+MeasureName2=MeasureYear
+Text=%1, %2
+FontSize=11
+FontColor=ffffff
+FontFace=Alata
+FontWeight=600
+X=400
+Y=293
+AntiAlias=1
+InlineSetting=Case | Upper
+InlineSetting2=CharacterSpacing | 0.5 | 0.5
+StringAlign=CenterCenter
+
+[HBorder1]
+Meter=Shape
+Shape=Line 265,323,530,323 | StrokeWidth 27 | StrokeColor ffffff
+
+; --- Weekday Headers ---
+
+[WeekDaysStyle]
+FontSize=9
+FontFace=Alata
+FontColor=000000
+FontWeight=600
+AntiAlias=1
+StringAlign=CenterCenter
+Y=323
+
+[MeterWeekDay1]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="SUN"
+X=285
+
+[MeterWeekDay2]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="MON"
+X=323
+
+[MeterWeekDay3]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="TUE"
+X=360
+
+[MeterWeekDay4]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="WED"
+X=398
+
+[MeterWeekDay5]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="THU"
+X=437
+
+[MeterWeekDay6]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="FRI"
+FontColor=ff0000
+X=474
+
+[MeterWeekDay7]
+Meter=String
+MeterStyle=WeekDaysStyle
+Text="SAT"
+FontColor=ff0000
+X=512
+
+; --- Current Day Highlight ---
+; Placed BEFORE MeterDays so the number is drawn ON TOP of the red box.
+
+[MeasureDate]
+Measure=Time
+Format=%#d
+
+[MeasureDateToday]
+Measure=Time
+Format=%#d
+
+[MeasureDayOfWeekToday]
+Measure=Time
+Format=%w
+
+; April 2026 starts on a Wednesday (Day 3). 
+; This formula calculates which row (0-5) the date falls in.
+[MeasureRowCalculation]
+Measure=Calc
+Formula=(Trunc(([MeasureDateToday] + 3 - 1) / 7))
+DynamicVariables=1
+
+[MeasureCurrentDayX]
+Measure=Calc
+Formula=([MeasureDayOfWeekToday] * 37.8)
+DynamicVariables=1
+
+[MeasureCurrentDayY]
+Measure=Calc
+Formula=([MeasureRowCalculation] * 23.8)
+DynamicVariables=1
+
+[CurrentDaySquare]
+Meter=Shape
+Shape=Rectangle (271 + [MeasureCurrentDayX]),(334 + [MeasureCurrentDayY]),25,20,5 | Fill Color 0,0,0,1 | Stroke Color 255,255,255 | StrokeWidth 2
+DynamicVariables=1
+
+; --- Days Grid ---
+
+[MeterDays]
+Meter=String
+Text=#DaysText#
+FontSize=12.5
+FontFace=Consolas
+FontColor=ffffff
+FontWeight=600
+X=395
+Y=343
+StringAlign=Center
+AntiAlias=1
+DynamicVariables=1
+
+; Column 6 (Friday) - Red
+InlinePattern=(.{4})(?=.{4}\n)|(.{4})(?=.{4}$)
+InlineSetting=Color | ff0000
+
+; Column 7 (Saturday) - Red
+InlinePattern2=(.{3})(?=\n)|(.{3})$
+InlineSetting2=Color | ff0000
+
+; Spacing Logic for Single Digits
+InlinePattern3=(?<=\b[1-9])\x20
+InlineSetting3=Size | 12.5
+InlinePattern4=\x20(?=[1-9]\b)
+InlineSetting4=Size | 12.5
+InlinePattern5=(?<=^|\n)\x20
+InlineSetting5=Size | 12.5
+
+; Previous/Next Month Days - Gray
+InlinePattern6=(^.*?(?= 1))
+InlineSetting6=Color | aaaaaa
+InlinePattern7=(?:.*\n){4}.*?( 1[\s\S]*)
+InlineSetting7=Color | aaaaaa
+
+[Devider2]
+Meter=Shape
+Shape=Line 265,275,530,275 | StrokeWidth 5 | StrokeColor ffffffff
+
+;--------------------PCStats---------------------;
+
+[Heading3]
+Meter=Shape
+Shape=Line 530,40,795,40 | StrokeWidth 50 | StrokeColor 255,255,255,255
+
+[Title3]
+Meter=String
+StringAlign=CenterCenter
+Text=PC Stats
+FontColor=0,0,0,255
+FontSize=20
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=35
+X=665
+
+[LeftTexts2]
+StringAlign=Left
+FontColor=255,255,255,255
+FontSize=11
+AntiAlias=1
+FontFace=Alata
+X=545
+
+[RightTexts2]
+StringAlign=Right
+FontColor=255,255,255,255
+FontSize=11
+AntiAlias=1
+FontFace=Alata
+X=775
+
+[MiniHeading1]
+Meter=Shape
+Shape=Line 530,90,795,90 | StrokeWidth 30 | StrokeColor 255,255,255,255
+
+[MiniTitle1]
+Meter=String
+StringAlign=CenterCenter
+Text=AMD Ryzen 9 7900X, 4.7GHz
+FontColor=0,0,0,255
+FontSize=12
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=90
+X=665
+
+[MeasurePCCPUUsage]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw1
+
+[MeasurePCCPUTemp]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw2
+
+[MeasurePCGPUUsage]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw4
+
+[MeasurePCGPUTemp]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw3
+
+[MeasurePCVRAM]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw5
+
+[MeasurePCVRAMGB]
+Measure=Calc
+Formula=MeasurePCVRAM / 1024
+
+[MeasurePCFPS]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw6
+
+[MeasurePCRAMUsage]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw0
+
+[MeasurePCRAMUsageGB]
+Measure=Calc
+Formula=MeasurePCRAMUsage / 1024
+
+[MeasurePCEDown]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw7
+
+[MeasurePCEUp]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw8
+
+[MeasurePCWDown]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw9
+
+[MeasurePCWUp]
+Measure=Registry
+RegHKey=HKEY_CURRENT_USER
+RegKey=SOFTWARE\HWiNFO64\VSB
+RegValue=ValueRaw10
+
+[MeasurePCDownSpeed]
+Measure=Calc
+Formula=(MeasurePCEDown + MeasurePCWDown) / 1024
+
+[MeasurePCUpSpeed]
+Measure=Calc
+Formula=(MeasurePCEUp + MeasurePCWUp) / 1024
+
+[MeterPCCPUUsageText]
+Meter=String
+Text=Utilization:
+MeterStyle=LeftTexts2
+Y=113
+
+[MeterPCCPUUsage]
+Meter=String
+MeasureName=MeasurePCCPUUsage
+Text=%1%
+MeterStyle=RightTexts2
+Y=113
+
+[MeterPCCPUTempText]
+Meter=String
+Text=Temparature:
+MeterStyle=LeftTexts2
+Y=136
+
+[MeterPCCPUTemp]
+Meter=String
+MeasureName=MeasurePCCPUTemp
+Text=%1°C
+MeterStyle=RightTexts2
+Y=136
+
+[MiniHeading2]
+Meter=Shape
+Shape=Line 530,180,795,180 | StrokeWidth 30 | StrokeColor 255,255,255,255
+
+[MiniTitle2]
+Meter=String
+StringAlign=CenterCenter
+Text=AMD Radeon RX 7900 GRE
+FontColor=0,0,0,255
+FontSize=12
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=180
+X=665
+
+[MeterPCGPUUsageText]
+Meter=String
+Text=Utilization:
+MeterStyle=LeftTexts2
+Y=203
+
+[MeterPCGPUUsage]
+Meter=String
+MeasureName=MeasurePCGPUUsage
+Text=%1%
+MeterStyle=RightTexts2
+Y=203
+
+[MeterPCGPUTempText]
+Meter=String
+Text=Temparature:
+MeterStyle=LeftTexts2
+Y=226
+
+[MeterPCGPUTemp]
+Meter=String
+MeasureName=MeasurePCGPUTemp
+Text=%1°C
+MeterStyle=RightTexts2
+Y=226
+
+[MeterPCVRAMText]
+Meter=String
+Text=VRAM:
+MeterStyle=LeftTexts2
+Y=249
+
+[MeterPCVRAM]
+Meter=String
+MeasureName=MeasurePCVRAMGB
+NumOfDecimals=2
+Text=%1GB / 16GB
+MeterStyle=RightTexts2
+Y=249
+
+[MeterPCFPSText]
+Meter=String
+Text=Framerate:
+MeterStyle=LeftTexts2
+Y=272
+
+[MeterPCFPS]
+Meter=String
+MeasureName=MeasurePCFPS
+Text=%1 FPS
+MeterStyle=RightTexts2
+Y=272
+
+[MiniHeading3]
+Meter=Shape
+Shape=Line 530,316,795,316 | StrokeWidth 30 | StrokeColor 255,255,255,255
+
+[MiniTitle3]
+Meter=String
+StringAlign=CenterCenter
+Text=Kingston Fury Beast 6000MHZ
+FontColor=0,0,0,255
+FontSize=12
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=316
+X=665
+
+[MeterPCRAMUsageText]
+Meter=String
+Text=Usage:
+MeterStyle=LeftTexts2
+Y=339
+
+[MeterPCRAMUsage]
+Meter=String
+MeasureName=MeasurePCRAMUsageGB
+NumOfDecimals=2
+Text=%1GB / 32GB
+MeterStyle=RightTexts2
+Y=339
+
+[MiniHeading4]
+Meter=Shape
+Shape=Line 530,383,795,383 | StrokeWidth 30 | StrokeColor 255,255,255,255
+
+[MiniTitle4]
+Meter=String
+StringAlign=CenterCenter
+Text=Network Speed
+FontColor=0,0,0,255
+FontSize=12
+FontWeight=700
+FontFace=Alata
+AntiAlias=1
+StringStyle=Bold
+Y=383
+X=665
+
+[MeterPCDownSpeedText]
+Meter=String
+Text=Download:
+MeterStyle=LeftTexts2
+Y=406
+
+[MeterPCDownSpeed]
+Meter=String
+MeasureName=MeasurePCDownSpeed
+NumOfDecimals=2
+Text=%1 MB/s
+MeterStyle=RightTexts2
+Y=406
+
+[MeterPCUpSpeedText]
+Meter=String
+Text=Upload:
+MeterStyle=LeftTexts2
+Y=429
+
+[MeterPCUpSpeed]
+Meter=String
+MeasureName=MeasurePCUpSpeed
+NumOfDecimals=2
+Text=%1 MB/s
+MeterStyle=RightTexts2
+Y=429
